@@ -1,12 +1,9 @@
 package main
 
 import (
-	// "todo-cli/cmd"
-	"todo-cli/internal"
+	"todo-cli/cmd"
 )
 
 func main() {
-	// cmd.Execute()
-	taskFile := "./.cache/tasks.csv"
-	internal.ManageTasksFile(taskFile)
+	cmd.Execute()
 }
