@@ -28,14 +28,3 @@ func CreateTasksFile(taskFile string) error {
 	}
 	return nil
 }
-
-func OpenTasksFile(taskFile string) (*os.File, error) {
-	completeFilePath := ".lists/" + taskFile + ".csv"
-	file, err := os.OpenFile(completeFilePath, os.O_APPEND|os.O_WRONLY, 0644)
-	if err != nil {
-		log.Printf("error opening file: %s", err)
-		return nil, err
-	}
-	tasksFile = file
-	return tasksFile, nil
-}
