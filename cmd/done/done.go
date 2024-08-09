@@ -17,6 +17,6 @@ var Cmd = &cobra.Command{
 }
 
 func completeTask() error {
-	fmt.Println("Task marked as completed!")
+	fmt.Printf("Task marked as completed!")
 	return nil
 }
