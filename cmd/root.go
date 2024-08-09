@@ -5,6 +5,7 @@ import (
 	"os"
 	"todo-cli/cmd/create"
 	"todo-cli/cmd/done"
+	"todo-cli/cmd/get"
 
 	"github.com/spf13/cobra"
 )
@@ -27,7 +28,7 @@ var (
 )
 
 func Execute() {
-	rootCmd.AddCommand(done.Cmd, create.Cmd)
+	rootCmd.AddCommand(done.Cmd, create.Cmd, get.Cmd)
 	rootCmd.CompletionOptions.DisableDefaultCmd = true
 	rootCmd.PersistentFlags().StringVarP(&listName, "list", "l", "", "Name of the task list to modify")
 	if e := rootCmd.Execute(); e != nil {
