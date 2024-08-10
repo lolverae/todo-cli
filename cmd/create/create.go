@@ -2,7 +2,9 @@ package create
 
 import (
 	"encoding/csv"
+	"fmt"
 	"os"
+	"path/filepath"
 
 	"github.com/spf13/cobra"
 )
@@ -10,37 +12,32 @@ import (
 var Cmd = &cobra.Command{
 	Use:   "new [task to create]",
 	Short: "Create a new task",
-	Long:  `Create a new item on the To Do list`,
-	Args:  cobra.MinimumNArgs(1),
-	Run: func(cmd *cobra.Command, args []string) {
-		listContext, _ := cmd.Flags().GetString("list")
-		taskTitle := args[0]
-		writeTaskToCSV(taskTitle, listContext)
-	},
+	Long:  "Create a new item on the To Do list",
+	Args:  cobra.ExactArgs(1),
+	RunE:  runCommand,
 }
 
-type Task struct {
-	Name   string
-	Status string
+func runCommand(cmd *cobra.Command, args []string) error {
+	listContext, _ := cmd.Flags().GetString("list")
+	taskTitle := args[0]
+	return writeTaskToCSV(taskTitle, listContext)
 }
 
 func writeTaskToCSV(taskTitle string, listContext string) error {
-	completeFilePath := ".lists/" + listContext + ".csv"
+	completeFilePath := filepath.Join(".lists", listContext+".csv")
+
 	file, err := os.OpenFile(completeFilePath, os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0644)
 	if err != nil {
-		return err
+		return fmt.Errorf("could not open file: %w", err)
 	}
 	defer file.Close()
 
 	writer := csv.NewWriter(file)
 	defer writer.Flush()
 
-	var task Task
-	task.Name = taskTitle
-	task.Status = "Pending"
-	err = writer.Write([]string{task.Name, task.Status})
-	if err != nil {
-		return err
+	task := []string{taskTitle, "Pending"}
+	if err := writer.Write(task); err != nil {
+		return fmt.Errorf("could not write to file: %w", err)
 	}
 
 	return nil
