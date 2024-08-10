@@ -6,6 +6,7 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/jedib0t/go-pretty/table"
 	"github.com/spf13/cobra"
 )
 
@@ -54,12 +55,21 @@ func getTasks(listContext string) error {
 		return nil
 	}
 
+	// Setup output as table using pretty print
+	t := table.NewWriter()
+	t.SetOutputMirror(os.Stdout)
+	t.AppendHeader(table.Row{"Task", "Status"})
 	for _, task := range tasks {
 		if len(task) < 2 {
 			return fmt.Errorf("Malformed task record: %v", task)
 		}
-		fmt.Printf("Name: %s, Status: %s\n", task[0], task[1])
+		t.AppendRows([]table.Row{
+			{task[0], task[1]},
+		})
 	}
+
+	t.SetStyle(table.StyleBold)
+	t.Render()
 
 	return nil
 }
