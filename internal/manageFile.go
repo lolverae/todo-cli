@@ -15,11 +15,15 @@ func CreateTasksFile(taskFile string) error {
 		return fmt.Errorf("invalid taskFile: must contain only letters and underscores")
 	}
 	// Construct the complete file path
-	completeFilePath := filepath.Join(".lists", taskFile+".csv")
+	home, err := os.UserHomeDir()
+	if err != nil {
+		log.Printf("Failed to get home directory: %s", err)
+	}
+	completeFilePath := filepath.Join(home+"/.lists", taskFile+".csv")
 
 	// Ensure the directory exists
-	cacheDir := filepath.Dir(completeFilePath)
-	err := os.MkdirAll(cacheDir, os.ModePerm)
+	listsDir := filepath.Dir(completeFilePath)
+	err = os.MkdirAll(listsDir, 0777)
 	if err != nil {
 		log.Printf("error creating lists directory: %s", err)
 		return err

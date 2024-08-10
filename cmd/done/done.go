@@ -24,7 +24,16 @@ func runCommand(cmd *cobra.Command, args []string) error {
 }
 
 func completeTask(taskTitle string, listContext string) error {
-	completeFilePath := filepath.Join(".lists", listContext+".csv")
+	if listContext == "" {
+		listContext = "default"
+	}
+
+	home, err := os.UserHomeDir()
+	if err != nil {
+		fmt.Printf("Failed to get home directory: %s", err)
+	}
+	completeFilePath := filepath.Join(home+"/.lists", listContext+".csv")
+
 	file, err := os.Open(completeFilePath)
 	if err != nil {
 		return fmt.Errorf("could not open file %s: %w", completeFilePath, err)

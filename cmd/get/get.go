@@ -28,7 +28,14 @@ type Task struct {
 }
 
 func getTasks(listContext string) error {
-	completeFilePath := filepath.Join(".lists", listContext+".csv")
+	if listContext == "" {
+		listContext = "default"
+	}
+	home, err := os.UserHomeDir()
+	if err != nil {
+		fmt.Printf("Failed to get home directory: %s", err)
+	}
+	completeFilePath := filepath.Join(home+"/.lists", listContext+".csv")
 
 	file, err := os.Open(completeFilePath)
 	if err != nil {
