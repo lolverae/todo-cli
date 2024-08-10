@@ -6,6 +6,7 @@ import (
 	"todo-cli/cmd/create"
 	"todo-cli/cmd/done"
 	"todo-cli/cmd/get"
+	"todo-cli/internal"
 
 	"github.com/spf13/cobra"
 )
@@ -19,9 +20,9 @@ var (
 		PersistentPreRun: func(cmd *cobra.Command, args []string) {
 			listName, _ = cmd.Flags().GetString("list")
 			if listName != "" {
-				CreateTasksFile(listName)
+				internal.CreateTasksFile(listName)
 			} else {
-				CreateTasksFile("default")
+				internal.CreateTasksFile("default")
 			}
 		},
 	}

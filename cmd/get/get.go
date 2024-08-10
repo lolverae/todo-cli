@@ -4,6 +4,7 @@ import (
 	"encoding/csv"
 	"fmt"
 	"os"
+	"path/filepath"
 
 	"github.com/spf13/cobra"
 )
@@ -11,11 +12,14 @@ import (
 var Cmd = &cobra.Command{
 	Use:   "get",
 	Short: "Gets all tasks",
-	Long:  `Gets all tasks name and its status`,
-	Run: func(cmd *cobra.Command, args []string) {
-		listContext, _ := cmd.Flags().GetString("list")
-		getTasks(listContext)
-	},
+	Long:  "Gets all tasks with their names and statuses.",
+	Args:  cobra.NoArgs,
+	RunE:  runCommand,
+}
+
+func runCommand(cmd *cobra.Command, args []string) error {
+	listContext, _ := cmd.Flags().GetString("list")
+	return getTasks(listContext)
 }
 
 type Task struct {
@@ -24,28 +28,31 @@ type Task struct {
 }
 
 func getTasks(listContext string) error {
-	completeFilePath := ".lists/" + listContext + ".csv"
+	completeFilePath := filepath.Join(".lists", listContext+".csv")
+
 	file, err := os.Open(completeFilePath)
 	if err != nil {
-		return err
+		return fmt.Errorf("Could not open file %s: %w", completeFilePath, err)
 	}
 	defer file.Close()
+
 	reader := csv.NewReader(file)
-	records, err := reader.ReadAll()
+	tasks, err := reader.ReadAll()
 	if err != nil {
-		return err
+		return fmt.Errorf("Could not read CSV file: %w", err)
 	}
 
-	var result []Task
-	for _, record := range records[:] {
-		result = append(result, Task{
-			Name:   record[0],
-			Status: record[1],
-		})
+	if len(tasks) == 0 {
+		fmt.Println("No tasks found.")
+		return nil
 	}
 
-	for _, record := range result {
-		fmt.Printf("Name: %s, Status: %s\n", record.Name, record.Status)
+	for _, task := range tasks {
+		if len(task) < 2 {
+			return fmt.Errorf("Malformed task record: %v", task)
+		}
+		fmt.Printf("Name: %s, Status: %s\n", task[0], task[1])
 	}
+
 	return nil
 }

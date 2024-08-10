@@ -4,6 +4,7 @@ import (
 	"encoding/csv"
 	"fmt"
 	"os"
+	"path/filepath"
 
 	"github.com/spf13/cobra"
 )
@@ -12,19 +13,21 @@ var Cmd = &cobra.Command{
 	Use:   "done [task completed]",
 	Short: "Mark a task as completed",
 	Long:  `Change the status of an item to completed`,
-	Args:  cobra.MinimumNArgs(1),
-	Run: func(cmd *cobra.Command, args []string) {
-		listContext, _ := cmd.Flags().GetString("list")
-		taskTitle := args[0]
-		completeTask(taskTitle, listContext)
-	},
+	Args:  cobra.ExactArgs(1),
+	RunE:  runCommand,
+}
+
+func runCommand(cmd *cobra.Command, args []string) error {
+	listContext, _ := cmd.Flags().GetString("list")
+	taskTitle := args[0]
+	return completeTask(taskTitle, listContext)
 }
 
 func completeTask(taskTitle string, listContext string) error {
-	completeFilePath := ".lists/" + listContext + ".csv"
+	completeFilePath := filepath.Join(".lists", listContext+".csv")
 	file, err := os.Open(completeFilePath)
 	if err != nil {
-		return err
+		return fmt.Errorf("could not open file %s: %w", completeFilePath, err)
 	}
 	defer file.Close()
 
@@ -35,16 +38,23 @@ func completeTask(taskTitle string, listContext string) error {
 	}
 
 	var newRecords [][]string
+	taskFound := false
 	for _, record := range records {
 		if len(record) != 2 {
-			return fmt.Errorf("invalid CSV format: expected 2 columns")
+			return fmt.Errorf("invalid CSV format: expected 2 columns, found %d", len(record))
 		}
 		if record[0] == taskTitle {
 			record[1] = "Complete"
+			taskFound = true
 		}
 		newRecords = append(newRecords, record)
 	}
 
+	if !taskFound {
+		return fmt.Errorf("task %q not found", taskTitle)
+	}
+
+	// Create temp file to store the new file with new statuses
 	tempFile, err := os.CreateTemp("", "modified_*.csv")
 	if err != nil {
 		return fmt.Errorf("error creating temporary file: %w", err)
@@ -52,13 +62,14 @@ func completeTask(taskTitle string, listContext string) error {
 	defer os.Remove(tempFile.Name())
 	defer tempFile.Close()
 
+	// Write on new temp file
 	writer := csv.NewWriter(tempFile)
-	defer writer.Flush()
-
-	if err := writer.WriteAll(records); err != nil {
+	if err := writer.WriteAll(newRecords); err != nil {
 		return fmt.Errorf("error writing to temporary file: %w", err)
 	}
+	writer.Flush()
 
+	// Replace old list with updated list
 	if err := os.Rename(tempFile.Name(), completeFilePath); err != nil {
 		return fmt.Errorf("error renaming temporary file: %w", err)
 	}
