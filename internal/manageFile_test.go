@@ -40,13 +40,14 @@ func TestCreateTasksFile(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			// Prepare the environment
-			testFilePath := filepath.Join(".lists", tc.taskFile+".csv")
+			home, err := os.UserHomeDir()
+			testFilePath := filepath.Join(home+"/.lists", tc.taskFile+".csv")
 
 			// Clean up before test
-			os.RemoveAll(".lists")
+			os.RemoveAll(home + "/.lists")
 
 			// Call the function
-			err := CreateTasksFile(tc.taskFile)
+			err = CreateTasksFile(tc.taskFile)
 
 			// Check for errors
 			if (err != nil) != tc.expectError {
@@ -74,7 +75,7 @@ func TestCreateTasksFile(t *testing.T) {
 			}
 
 			// Clean up after test
-			os.RemoveAll(".lists")
+			os.RemoveAll(home + "/.lists")
 		})
 	}
 }
