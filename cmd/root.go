@@ -12,7 +12,8 @@ import (
 )
 
 var (
-	listName string
+	listName      string
+	desiredStatus string
 
 	rootCmd = &cobra.Command{
 		Use:  "todo-cli [command] [list]",
@@ -32,6 +33,7 @@ func Execute() {
 	rootCmd.AddCommand(done.Cmd, create.Cmd, get.Cmd)
 	rootCmd.CompletionOptions.DisableDefaultCmd = true
 	rootCmd.PersistentFlags().StringVarP(&listName, "list", "l", "", "Name of the task list to modify")
+	rootCmd.PersistentFlags().StringVarP(&desiredStatus, "status", "s", "", "Status of the tasks")
 	if e := rootCmd.Execute(); e != nil {
 		_, _ = fmt.Fprintf(os.Stderr, "%v\n", e.Error())
 		os.Exit(1)
