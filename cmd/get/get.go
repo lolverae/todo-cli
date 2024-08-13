@@ -14,13 +14,14 @@ var Cmd = &cobra.Command{
 	Use:   "get",
 	Short: "Gets all tasks",
 	Long:  "Gets all tasks with their names and statuses.",
-	Args:  cobra.NoArgs,
+	Args:  cobra.RangeArgs(0, 2),
 	RunE:  runCommand,
 }
 
 func runCommand(cmd *cobra.Command, args []string) error {
+	desiredStatus, _ := cmd.Flags().GetString("status")
 	listContext, _ := cmd.Flags().GetString("list")
-	return getTasks(listContext)
+	return getTasks(listContext, desiredStatus)
 }
 
 type Task struct {
@@ -28,7 +29,7 @@ type Task struct {
 	Status string
 }
 
-func getTasks(listContext string) error {
+func getTasks(listContext string, desiredStatus string) error {
 	if listContext == "" {
 		listContext = "default"
 	}
@@ -67,6 +68,28 @@ func getTasks(listContext string) error {
 		return nil
 	}
 
+	var completedTasks, pendingTasks []Task
+	for _, task := range tasks {
+		switch task.Status {
+		case "Completed":
+			completedTasks = append(completedTasks, task)
+		case "Pending":
+			pendingTasks = append(pendingTasks, task)
+		default:
+			fmt.Printf("Unknown status %s for task %s\n", task.Status, task.Name)
+		}
+	}
+
+	if desiredStatus == "completed" {
+		displayTasks(completedTasks)
+	} else if desiredStatus == "pending" {
+		displayTasks(pendingTasks)
+	}
+
+	return nil
+}
+
+func displayTasks(tasks []Task) {
 	// Setup output as table using pretty print
 	t := table.NewWriter()
 	t.SetOutputMirror(os.Stdout)
@@ -79,6 +102,4 @@ func getTasks(listContext string) error {
 
 	t.SetStyle(table.StyleBold)
 	t.Render()
-
-	return nil
 }
