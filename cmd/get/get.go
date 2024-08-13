@@ -33,6 +33,7 @@ func getTasks(listContext string, desiredStatus string) error {
 	if listContext == "" {
 		listContext = "default"
 	}
+
 	home, err := os.UserHomeDir()
 	if err != nil {
 		fmt.Printf("Failed to get home directory: %s", err)
@@ -62,7 +63,6 @@ func getTasks(listContext string, desiredStatus string) error {
 			Status: record[1],
 		})
 	}
-
 	if len(tasks) == 0 {
 		fmt.Println("No tasks found.")
 		return nil
@@ -84,6 +84,8 @@ func getTasks(listContext string, desiredStatus string) error {
 		displayTasks(completedTasks)
 	} else if desiredStatus == "pending" {
 		displayTasks(pendingTasks)
+	} else if desiredStatus == "" {
+		displayTasks(append(completedTasks, pendingTasks...))
 	}
 
 	return nil
