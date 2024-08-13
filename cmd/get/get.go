@@ -45,9 +45,21 @@ func getTasks(listContext string) error {
 	defer file.Close()
 
 	reader := csv.NewReader(file)
-	tasks, err := reader.ReadAll()
+	tasksList, err := reader.ReadAll()
 	if err != nil {
 		return fmt.Errorf("Could not read CSV file: %w", err)
+	}
+
+	// Map CSV to Task structs
+	var tasks []Task
+	for _, record := range tasksList {
+		if len(record) < 2 {
+			return fmt.Errorf("malformed task record: %v", record)
+		}
+		tasks = append(tasks, Task{
+			Name:   record[0],
+			Status: record[1],
+		})
 	}
 
 	if len(tasks) == 0 {
@@ -60,11 +72,8 @@ func getTasks(listContext string) error {
 	t.SetOutputMirror(os.Stdout)
 	t.AppendHeader(table.Row{"Task", "Status"})
 	for _, task := range tasks {
-		if len(task) < 2 {
-			return fmt.Errorf("Malformed task record: %v", task)
-		}
 		t.AppendRows([]table.Row{
-			{task[0], task[1]},
+			{task.Name, task.Status},
 		})
 	}
 
