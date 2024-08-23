@@ -71,7 +71,7 @@ func getTasks(listContext string, desiredStatus string) error {
 	var completedTasks, pendingTasks []Task
 	for _, task := range tasks {
 		switch task.Status {
-		case "Completed":
+		case "Complete":
 			completedTasks = append(completedTasks, task)
 		case "Pending":
 			pendingTasks = append(pendingTasks, task)
