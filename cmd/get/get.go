@@ -83,7 +83,11 @@ func getTasks(listContext string, desiredStatus string) error {
 	if desiredStatus == "completed" {
 		displayTasks(completedTasks)
 	} else if desiredStatus == "pending" {
-		displayTasks(pendingTasks)
+		if len(pendingTasks) == 0 {
+			fmt.Printf("Nice! No pending tasks\n")
+		} else {
+			displayTasks(pendingTasks)
+		}
 	} else if desiredStatus == "" {
 		displayTasks(append(completedTasks, pendingTasks...))
 	}
